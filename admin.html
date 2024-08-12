@@ -1,0 +1,1080 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <title>لوحة تحكم جدول الموظفين</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            direction: rtl;
+            padding: 20px;
+            background-color: #f5f5f5;
+            font-size: 12px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+        th, td {
+            border: 1px solid black;
+            text-align: center;
+            padding: 5px;
+            white-space: nowrap;
+            color: black;
+        }
+        th.black-header {
+            color: white;
+        }
+        .form-container {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            margin-bottom: 20px;
+            background-color: white;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            width: 100%;
+        }
+        .form-container label {
+            margin: 10px 10px 10px 0;
+            flex: 1 0 100px;
+        }
+        .form-container input, .form-container select {
+            margin: 10px 10px 10px 0;
+            padding: 8px;
+            flex: 1 0 200px;
+            box-sizing: border-box;
+        }
+        .form-container button {
+            padding: 10px 20px;
+            background-color: red;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 10px 0;
+        }
+        .form-container button:hover {
+            background-color: darkred;
+        }
+        .button-container {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        .button-container button {
+            padding: 10px 20px;
+            background-color: red;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .button-container button:hover {
+            background-color: darkred;
+        }
+        .date-container {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .date-container h2 {
+            background-color: red;
+            color: white;
+            padding: 10px;
+            border-radius: 5px;
+            display: inline-block;
+        }
+        .notification {
+            display: none;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+        }
+        .notification.success {
+            background-color: #4CAF50;
+            color: white;
+        }
+        .notification.error {
+            background-color: #f44336;
+            color: white;
+        }
+        .sticky-note {
+            width: 200px;
+            height: 200px;
+            padding: 10px;
+            margin: 10px;
+            background-color: lightyellow;
+            border: 1px solid black;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            position: relative;
+            display: inline-block;
+            font-size: 16px;
+            font-weight: bold;
+            color: black;
+        }
+        .sticky-note .close-btn {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            cursor: pointer;
+            font-size: 20px;
+            font-weight: bold;
+        }
+        .sticky-note div[contenteditable="true"] {
+            width: 100%;
+            height: calc(100% - 30px);
+            overflow-y: auto;
+            padding: 5px;
+            box-sizing: border-box;
+        }
+        #statisticsContainer {
+            margin-top: 20px;
+            text-align: center; /* لتوسيط العنوان */
+        }
+        #statisticsContainer h3 {
+            background-color: red;
+            color: white;
+            padding: 10px;
+            border-radius: 5px;
+            display: inline-block;
+            margin-bottom: 20px;
+        }
+        #statisticsTable th, #statisticsTable td {
+            padding: 10px;
+            border: 1px solid black;
+        }
+        #statisticsTable td:first-child {
+            background-color: #f0f0f0;
+            font-weight: bold;
+        }
+        #statisticsTable th {
+            background-color: #4CAF50;
+            color: white;
+        }
+        #statisticsTable tbody td {
+            background-color: #f9f9f9;
+        }
+    </style>
+</head>
+<body>
+    
+<div class="button-container">
+    <button onclick="window.location.href='index.html'">الرئيسية</butto>
+    <button onclick="window.location.href='leave_requests.html'">طلبات الإجازة</button> <!-- زر طلبات الإجازة -->
+    <button onclick="showForm('addEmployeeForm')">إضافة موظف جديد</button>
+    <button onclick="showForm('addTableForm')">إضافة جدول جديد</button>
+    <button onclick="showForm('editEmployeeForm')">تعديل بيانات الموظف</button>
+    <button onclick="showForm('moveEmployeeForm')">نقل الموظف إلى جدول آخر</button>
+    <button onclick="showForm('editTableNameForm')">تعديل اسم الجدول</button>
+    <button onclick="showForm('deleteTableForm')">حذف الجدول</button>
+    <button onclick="addStickyNote()">إضافة ملاحظة</button>
+</div>
+
+
+<div id="stickyNotesContainer">
+    <!-- سيتم إضافة الملاحظات اللاصقة هنا -->
+</div>
+
+<div class="date-container">
+    <h2>أغسطس 2024</h2>
+</div>
+
+<div id="formsContainer">
+    <div class="form-container" id="addEmployeeForm" style="display: none;">
+        <h2>إضافة موظف جديد</h2>
+        <form>
+            <label for="employeeId">كود الموظف:</label>
+            <input type="text" id="employeeId" name="employeeId" required>
+            <label for="employeeName">الاسم:</label>
+            <input type="text" id="employeeName" name="employeeName" required>
+            <label for="employeeJob">اسم الوظيفة:</label>
+            <input type="text" id="employeeJob" name="employeeJob" required>
+            <label for="requiredHours">الساعات المطلوبة:</label>
+            <input type="number" id="requiredHours" name="requiredHours" required value="208">
+            <label for="tableSelect">اختيار الجدول:</label>
+            <select id="tableSelect" name="tableSelect" required>
+                <!-- سيتم ملء الخيارات ديناميكيًا -->
+            </select>
+            <button type="submit">إضافة موظف</button>
+        </form>
+    </div>
+
+    <div class="form-container" id="addTableForm" style="display: none;">
+        <h2>إضافة جدول جديد</h2>
+        <form>
+            <label for="tableName">اسم الجدول:</label>
+            <input type="text" id="tableName" name="tableName" required>
+            <label for="tableColor">لون الجدول:</label>
+            <input type="color" id="tableColor" name="tableColor" required>
+            <button type="submit">إضافة جدول</button>
+        </form>
+    </div>
+
+    <div class="form-container" id="editEmployeeForm" style="display: none;">
+        <h2>تعديل بيانات الموظف</h2>
+        <form>
+            <label for="editEmployeeId">كود الموظف:</label>
+            <input type="text" id="editEmployeeId" name="editEmployeeId" required>
+            <label for="editEmployeeName">الاسم:</label>
+            <input type="text" id="editEmployeeName" name="editEmployeeName" required>
+            <label for="editEmployeeJob">اسم الوظيفة:</label>
+            <input type="text" id="editEmployeeJob" name="editEmployeeJob" required>
+            <button type="submit">تعديل الموظف</button>
+        </form>
+    </div>
+
+    <div class="form-container" id="moveEmployeeForm" style="display: none;">
+        <h2>نقل الموظف إلى جدول آخر</h2>
+        <form>
+            <label for="moveEmployeeId">كود الموظف:</label>
+            <input type="text" id="moveEmployeeId" name="moveEmployeeId" required>
+            <label for="newTableSelect">اختيار الجدول الجديد:</label>
+            <select id="newTableSelect" name="newTableSelect" required>
+                <!-- سيتم ملء الخيارات ديناميكيًا -->
+            </select>
+            <button type="submit">نقل الموظف</button>
+        </form>
+    </div>
+
+    <div class="form-container" id="editTableNameForm" style="display: none;">
+        <h2>تعديل اسم الجدول</h2>
+        <form>
+            <label for="oldTableName">اسم الجدول الحالي:</label>
+            <select id="oldTableName" name="oldTableName" required>
+                <!-- سيتم ملء الخيارات ديناميكيًا -->
+            </select>
+            <label for="newTableName">اسم الجدول الجديد:</label>
+            <input type="text" id="newTableName" name="newTableName" required>
+            <button type="submit">تعديل اسم الجدول</button>
+        </form>
+    </div>
+
+    <div class="form-container" id="deleteTableForm" style="display: none;">
+        <h2>حذف الجدول</h2>
+        <form>
+            <label for="deleteTableName">اسم الجدول:</label>
+            <select id="deleteTableName" name="deleteTableName" required>
+                <!-- سيتم ملء الخيارات ديناميكيًا -->
+            </select>
+            <button type="submit">حذف الجدول</button>
+        </form>
+    </div>
+</div>
+
+<div id="tablesContainer">
+    <!-- سيتم إضافة الجداول ديناميكيًا هنا -->
+</div>
+
+<div id="statisticsContainer">
+    <h3>إحصائية القوى العاملة</h3>
+    <table id="statisticsTable">
+        <thead>
+            <tr id="daysRowStatistics"></tr>
+            <tr id="datesRowStatistics"></tr>
+        </thead>
+        <tbody>
+            <tr id="statisticsRowD"><td>الصباح</td></tr>
+            <tr id="statisticsRowN"><td>المساء</td></tr>
+        </tbody>
+    </table>
+</div>
+
+<div id="notification" class="notification"></div>
+
+<script>
+    const apiUrl = 'api.php';
+    let undoStack = [];
+    let redoStack = [];
+
+    document.addEventListener('DOMContentLoaded', function() {
+        loadTables();
+        loadEmployees();
+        loadTablesForMove();
+        loadTablesForEdit();
+        loadTablesForDelete();
+        loadStickyNotes();
+        saveState();
+        generateStatistics();
+    });
+
+    function saveState() {
+        const tablesContainer = document.getElementById('tablesContainer');
+        undoStack.push(tablesContainer.innerHTML);
+        redoStack = [];
+    }
+
+    function undo() {
+        if (undoStack.length > 0) {
+            const tablesContainer = document.getElementById('tablesContainer');
+            redoStack.push(tablesContainer.innerHTML);
+            const previousState = undoStack.pop();
+            tablesContainer.innerHTML = previousState;
+        }
+    }
+
+    function redo() {
+        if (redoStack.length > 0) {
+            const tablesContainer = document.getElementById('tablesContainer');
+            undoStack.push(tablesContainer.innerHTML);
+            const nextState = redoStack.pop();
+            tablesContainer.innerHTML = nextState;
+        }
+    }
+
+    function showForm(formId) {
+        const formsContainer = document.getElementById('formsContainer');
+        const forms = formsContainer.getElementsByClassName('form-container');
+        for (let form of forms) {
+            form.style.display = 'none';
+        }
+        document.getElementById(formId).style.display = 'flex';
+    }
+
+    document.getElementById('addEmployeeForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+
+        const employeeId = document.getElementById('employeeId').value;
+        const employeeName = document.getElementById('employeeName').value;
+        const employeeJob = document.getElementById('employeeJob').value;
+        const requiredHours = document.getElementById('requiredHours').value;
+        const tableSelect = document.getElementById('tableSelect').value;
+
+        addEmployee(employeeId, employeeName, employeeJob, requiredHours, tableSelect);
+
+        document.getElementById('addEmployeeForm').reset();
+        saveState();
+    });
+
+    document.getElementById('editEmployeeForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+
+        const employeeId = document.getElementById('editEmployeeId').value;
+        const employeeName = document.getElementById('editEmployeeName').value;
+        const employeeJob = document.getElementById('editEmployeeJob').value;
+
+        editEmployee(employeeId, employeeName, employeeJob);
+
+        document.getElementById('editEmployeeForm').reset();
+        saveState();
+    });
+
+    document.getElementById('moveEmployeeForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+
+        const employeeId = document.getElementById('moveEmployeeId').value;
+        const newTableSelect = document.getElementById('newTableSelect').value;
+
+        moveEmployee(employeeId, newTableSelect);
+
+        document.getElementById('moveEmployeeForm').reset();
+        saveState();
+    });
+
+    document.getElementById('editTableNameForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+
+        const oldTableName = document.getElementById('oldTableName').value;
+        const newTableName = document.getElementById('newTableName').value;
+
+        editTableName(oldTableName, newTableName);
+
+        document.getElementById('editTableNameForm').reset();
+        saveState();
+    });
+
+    document.getElementById('deleteTableForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+
+        const deleteTableName = document.getElementById('deleteTableName').value;
+
+        deleteTable(deleteTableName);
+
+        document.getElementById('deleteTableForm').reset();
+        saveState();
+    });
+
+    document.getElementById('addTableForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+
+        const tableName = document.getElementById('tableName').value;
+        const tableColor = document.getElementById('tableColor').value;
+
+        addTable(tableName, tableColor);
+
+        document.getElementById('addTableForm').reset();
+        saveState();
+    });
+
+    function loadTables() {
+        fetch(apiUrl + '?action=getTables')
+            .then(response => response.json())
+            .then(data => {
+                const tableSelect = document.getElementById('tableSelect');
+                tableSelect.innerHTML = '';
+                data.forEach(table => {
+                    const option = document.createElement('option');
+                    option.value = table.name;
+                    option.textContent = table.name;
+                    tableSelect.appendChild(option);
+                });
+                loadTablesInContainer(data);
+            })
+            .catch(error => console.error('Error:', error));
+    }
+
+    function loadTablesInContainer(tables) {
+        const tablesContainer = document.getElementById('tablesContainer');
+        tablesContainer.innerHTML = '';
+        tables.forEach(table => {
+            const tableElement = document.createElement('table');
+            tableElement.style.borderColor = table.color;
+            tableElement.dataset.name = table.name;
+            tableElement.style.borderCollapse = 'collapse';
+            tableElement.style.marginBottom = '20px';
+            tableElement.innerHTML = createTableHeader(table.name, table.color);
+            tableElement.querySelector('thead').rows[1].id = `daysRow${table.name}`;
+            tablesContainer.appendChild(tableElement);
+            addDaysRow(document.getElementById(`daysRow${table.name}`), table.color);
+        });
+    }
+
+    function createTableHeader(tableName, tableColor) {
+        const textColorClass = tableColor.toLowerCase() === '#000000' ? 'black-header' : '';
+        return `
+            <thead>
+                <tr style="background-color: ${tableColor};" class="${textColorClass}">
+                    <th rowspan="3">الكود</th>
+                    <th rowspan="3">الاسم</th>
+                    <th rowspan="3">الوظيفة</th>
+                    <th colspan="31">${tableName}</th>
+                    <th rowspan="3">عدد المناوبات</th>
+                    <th rowspan="3">الساعات المطلوبة</th>
+                    <th rowspan="3">الساعات الفعلية</th>
+                    <th rowspan="3">فارق الساعات</th>
+                    <th rowspan="3">إجراءات</th>
+                </tr>
+                <tr id="daysRow${tableName}">
+                    <!-- سيتم ملء الأيام ديناميكيًا بواسطة JavaScript -->
+                </tr>
+                <tr>
+                    <th style="background-color: ${tableColor};">1</th>
+                    <th style="background-color: ${tableColor};">2</th>
+                    <th style="background-color: ${tableColor};">3</th>
+                    <th style="background-color: ${tableColor};">4</th>
+                    <th style="background-color: ${tableColor};">5</th>
+                    <th style="background-color: ${tableColor};">6</th>
+                    <th style="background-color: ${tableColor};">7</th>
+                    <th style="background-color: ${tableColor};">8</th>
+                    <th style="background-color: ${tableColor};">9</th>
+                    <th style="background-color: ${tableColor};">10</th>
+                    <th style="background-color: ${tableColor};">11</th>
+                    <th style="background-color: ${tableColor};">12</th>
+                    <th style="background-color: ${tableColor};">13</th>
+                    <th style="background-color: ${tableColor};">14</th>
+                    <th style="background-color: ${tableColor};">15</th>
+                    <th style="background-color: ${tableColor};">16</th>
+                    <th style="background-color: ${tableColor};">17</th>
+                    <th style="background-color: ${tableColor};">18</th>
+                    <th style="background-color: ${tableColor};">19</th>
+                    <th style="background-color: ${tableColor};">20</th>
+                    <th style="background-color: ${tableColor};">21</th>
+                    <th style="background-color: ${tableColor};">22</th>
+                    <th style="background-color: ${tableColor};">23</th>
+                    <th style="background-color: ${tableColor};">24</th>
+                    <th style="background-color: ${tableColor};">25</th>
+                    <th style="background-color: ${tableColor};">26</th>
+                    <th style="background-color: ${tableColor};">27</th>
+                    <th style="background-color: ${tableColor};">28</th>
+                    <th style="background-color: ${tableColor};">29</th>
+                    <th style="background-color: ${tableColor};">30</th>
+                    <th style="background-color: ${tableColor};">31</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+            <tfoot>
+                <tr>
+                    <td colspan="39">
+                        <div class="button-container">
+                            <button type="submit" onclick="saveShifts('${tableName}')">حفظ التغييرات</button>
+                        </div>
+                    </td>
+                </tr>
+            </tfoot>
+        `;
+    }
+
+    function addDaysRow(daysRow, tableColor) {
+        const days = ['الأحد', 'الاثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت'];
+        const date = new Date(2024, 7, 1); // أغسطس 2024 يبدأ في الأول من أغسطس
+        for (let i = 1; i <= 31; i++) {
+            const day = days[date.getDay()];
+            const th = document.createElement('th');
+            th.innerText = day;
+            th.style.backgroundColor = tableColor;
+            th.style.color = tableColor.toLowerCase() === '#000000' ? 'white' : 'black';
+            daysRow.appendChild(th);
+            date.setDate(date.getDate() + 1);
+        }
+    }
+
+    function addEmployee(employeeId, employeeName, employeeJob, requiredHours, tableSelect) {
+        const table = document.querySelector(`table[data-name="${tableSelect}"] tbody`);
+        const newRow = table.insertRow();
+        const cells = [];
+
+        const cell1 = newRow.insertCell(0);
+        const cell2 = newRow.insertCell(1);
+        const cellJob = newRow.insertCell(2);
+        for (let i = 0; i < 31; i++) {
+            cells.push(newRow.insertCell(i + 3));
+        }
+        const cellTotalShifts = newRow.insertCell(34);
+        const cellRequiredHours = newRow.insertCell(35);
+        const cellActualHours = newRow.insertCell(36);
+        const cellHourDiff = newRow.insertCell(37);
+        const cellActions = newRow.insertCell(38);
+
+        cell1.innerHTML = employeeId;
+        cell2.innerHTML = employeeName;
+        cellJob.innerHTML = employeeJob;
+        cellTotalShifts.innerHTML = `<span class="total-shifts">0</span>`;
+        cellRequiredHours.innerHTML = requiredHours;
+        cellActualHours.innerHTML = `<span class="actual-hours">0</span>`;
+        cellHourDiff.innerHTML = `<span class="hour-diff">0</span>`;
+        cellActions.innerHTML = `<button type="button" onclick="deleteEmployee('${employeeId}', this, '${tableSelect}')">حذف</button>`;
+
+        cells.forEach(function(cell, index) {
+            cell.innerHTML = `<select name="shift[${employeeId}][${index + 1}]" onchange="updateStatistics('${tableSelect}')">
+                                <option value=""></option>
+                                <option value="D">D</option>
+                                <option value="N">N</option>
+                              </select>`;
+        });
+
+        calculateHours(newRow);
+        saveEmployees(tableSelect);
+        generateStatistics();
+    }
+
+    function editEmployee(employeeId, employeeName, employeeJob) {
+        fetch(apiUrl + '?action=editEmployee', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ employeeId, employeeName, employeeJob })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'success') {
+                showNotification('تم تعديل بيانات الموظف بنجاح', 'success');
+                loadEmployees();
+            } else {
+                showNotification('حدث خطأ أثناء تعديل بيانات الموظف', 'error');
+            }
+        })
+        .catch(error => {
+            showNotification('حدث خطأ أثناء تعديل بيانات الموظف', 'error');
+        });
+    }
+
+    function moveEmployee(employeeId, newTableSelect) {
+        fetch(apiUrl + '?action=moveEmployee', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ employeeId, newTableSelect })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'success') {
+                showNotification('تم نقل الموظف بنجاح', 'success');
+                loadEmployees();
+            } else {
+                showNotification('حدث خطأ أثناء نقل الموظف', 'error');
+            }
+        })
+        .catch(error => {
+            showNotification('حدث خطأ أثناء نقل الموظف', 'error');
+        });
+    }
+
+    function editTableName(oldTableName, newTableName) {
+        fetch(apiUrl + '?action=editTableName', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ oldTableName, newTableName })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'success') {
+                showNotification('تم تعديل اسم الجدول بنجاح', 'success');
+                loadTables();
+            } else {
+                showNotification('حدث خطأ أثناء تعديل اسم الجدول', 'error');
+            }
+        })
+        .catch(error => {
+            showNotification('حدث خطأ أثناء تعديل اسم الجدول', 'error');
+        });
+    }
+
+    function deleteTable(tableName) {
+        fetch(apiUrl + '?action=deleteTable', {
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ tableName })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'success') {
+                showNotification('تم حذف الجدول بنجاح', 'success');
+                loadTables();
+            } else {
+                showNotification('حدث خطأ أثناء حذف الجدول', 'error');
+            }
+        })
+        .catch(error => {
+            showNotification('حدث خطأ أثناء حذف الجدول', 'error');
+        });
+    }
+
+    function addTable(tableName, tableColor) {
+        fetch(apiUrl + '?action=addTable', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ name: tableName, color: tableColor })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'success') {
+                showNotification('تم إضافة الجدول بنجاح', 'success');
+                loadTables();
+            } else {
+                showNotification('حدث خطأ أثناء إضافة الجدول', 'error');
+            }
+        })
+        .catch(error => {
+            showNotification('حدث خطأ أثناء إضافة الجدول', 'error');
+        });
+    }
+
+    function loadTablesForMove() {
+        fetch(apiUrl + '?action=getTables')
+            .then(response => response.json())
+            .then(data => {
+                const newTableSelect = document.getElementById('newTableSelect');
+                newTableSelect.innerHTML = '';
+                data.forEach(table => {
+                    const option = document.createElement('option');
+                    option.value = table.name;
+                    option.textContent = table.name;
+                    newTableSelect.appendChild(option);
+                });
+            })
+            .catch(error => console.error('Error:', error));
+    }
+
+    function loadTablesForEdit() {
+        fetch(apiUrl + '?action=getTables')
+            .then(response => response.json())
+            .then(data => {
+                const oldTableName = document.getElementById('oldTableName');
+                oldTableName.innerHTML = '';
+                data.forEach(table => {
+                    const option = document.createElement('option');
+                    option.value = table.name;
+                    option.textContent = table.name;
+                    oldTableName.appendChild(option);
+                });
+            })
+            .catch(error => console.error('Error:', error));
+    }
+
+    function loadTablesForDelete() {
+        fetch(apiUrl + '?action=getTables')
+            .then(response => response.json())
+            .then(data => {
+                const deleteTableName = document.getElementById('deleteTableName');
+                deleteTableName.innerHTML = '';
+                data.forEach(table => {
+                    const option = document.createElement('option');
+                    option.value = table.name;
+                    option.textContent = table.name;
+                    deleteTableName.appendChild(option);
+                });
+            })
+            .catch(error => console.error('Error:', error));
+    }
+
+    function calculateHours(row) {
+        const requiredHours = parseFloat(row.cells[35].innerHTML);
+        let actualHours = 0;
+        let totalShifts = 0;
+        for (let i = 3; i < 34; i++) {
+            const shift = row.cells[i].querySelector('select').value;
+            if (shift === 'D' || shift === 'N') {
+                actualHours += 13;
+                totalShifts++;
+            }
+        }
+        row.cells[36].querySelector('.actual-hours').innerHTML = actualHours;
+        row.cells[34].querySelector('.total-shifts').innerHTML = totalShifts;
+
+        const hourDiff = actualHours - requiredHours;
+        row.cells[37].querySelector('.hour-diff').innerHTML = hourDiff;
+
+        generateStatistics();
+    }
+
+    function saveEmployees(tableSelect) {
+        const table = document.querySelector(`table[data-name="${tableSelect}"] tbody`);
+        const employees = {};
+
+        for (let i = 0; i < table.rows.length; i++) {
+            const row = table.rows[i];
+            const employeeId = row.cells[0].innerHTML;
+            const employee = {
+                employeeId: employeeId,
+                employeeName: row.cells[1].innerHTML,
+                employeeJob: row.cells[2].innerHTML,
+                totalShifts: row.cells[34].querySelector('.total-shifts').innerHTML,
+                requiredHours: row.cells[35].innerHTML,
+                actualHours: row.cells[36].querySelector('.actual-hours').innerHTML,
+                hourDiff: row.cells[37].querySelector('.hour-diff').innerHTML,
+                table: tableSelect,
+                shifts: {}
+            };
+            for (let j = 3; j < 34; j++) {
+                const shift = row.cells[j].querySelector('select').value;
+                if (shift) {
+                    employee.shifts[j - 2] = shift;
+                }
+            }
+            employees[employeeId] = employee;
+        }
+
+        fetch(apiUrl, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(employees)
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'success') {
+                showNotification('تم حفظ البيانات بنجاح', 'success');
+            } else {
+                showNotification('حدث خطأ أثناء حفظ البيانات', 'error');
+            }
+        })
+        .catch(error => {
+            showNotification('حدث خطأ أثناء حفظ البيانات', 'error');
+        });
+
+        generateStatistics();
+    }
+
+    function saveShifts(tableName) {
+        const table = document.querySelector(`table[data-name="${tableName}"] tbody`);
+        const employees = {};
+        for (let i = 0; i < table.rows.length; i++) {
+            const row = table.rows[i];
+            const employeeId = row.cells[0].innerHTML;
+            const shifts = {};
+            for (let j = 3; j < 34; j++) {
+                const shift = row.cells[j].querySelector('select').value;
+                if (shift) {
+                    shifts[j - 2] = shift;
+                }
+            }
+            employees[employeeId] = { shifts: shifts };
+        }
+
+        fetch(apiUrl, {
+            method: 'PATCH',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(employees)
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'success') {
+                showNotification('تم تحديث المناوبات بنجاح', 'success');
+            } else {
+                showNotification('حدث خطأ أثناء تحديث المناوبات', 'error');
+            }
+        })
+        .catch(error => {
+            showNotification('حدث خطأ أثناء تحديث المناوبات', 'error');
+        });
+
+        generateStatistics();
+    }
+
+    function loadEmployees() {
+        fetch(apiUrl)
+        .then(response => response.json())
+        .then(data => {
+            const tablesContainer = document.getElementById('tablesContainer');
+            const tables = tablesContainer.getElementsByTagName('table');
+            for (let table of tables) {
+                table.getElementsByTagName('tbody')[0].innerHTML = '';
+            }
+
+            data.forEach(employee => {
+                const table = document.querySelector(`table[data-name="${employee.table}"] tbody`);
+                const newRow = table.insertRow();
+                const cells = [];
+
+                const cell1 = newRow.insertCell(0);
+                const cell2 = newRow.insertCell(1);
+                const cellJob = newRow.insertCell(2);
+                for (let i = 0; i < 31; i++) {
+                    cells.push(newRow.insertCell(i + 3));
+                }
+                const cellTotalShifts = newRow.insertCell(34);
+                const cellRequiredHours = newRow.insertCell(35);
+                const cellActualHours = newRow.insertCell(36);
+                const cellHourDiff = newRow.insertCell(37);
+                const cellActions = newRow.insertCell(38);
+
+                cell1.innerHTML = employee.employeeId;
+                cell2.innerHTML = employee.employeeName;
+                cellJob.innerHTML = employee.employeeJob;
+                cellTotalShifts.innerHTML = `<span class="total-shifts">${employee.totalShifts}</span>`;
+                cellRequiredHours.innerHTML = employee.requiredHours;
+                cellActualHours.innerHTML = `<span class="actual-hours">${employee.actualHours}</span>`;
+                cellHourDiff.innerHTML = `<span class="hour-diff">${employee.hourDiff}</span>`;
+                cellActions.innerHTML = `<button type="button" onclick="deleteEmployee('${employee.employeeId}', this, '${employee.table}')">حذف</button>`;
+
+                cells.forEach(function(cell, index) {
+                    const shiftType = employee.shifts[index + 1] || '';
+                    cell.innerHTML = `<select name="shift[${employee.employeeId}][${index + 1}]" onchange="updateStatistics('${employee.table}')">
+                                        <option value=""></option>
+                                        <option value="D" ${shiftType === 'D' ? 'selected' : ''}>D</option>
+                                        <option value="N" ${shiftType === 'N' ? 'selected' : ''}>N</option>`;
+                });
+
+                calculateHours(newRow);
+            });
+        })
+        .catch(error => {
+            showNotification('حدث خطأ أثناء تحميل البيانات', 'error');
+        });
+    }
+
+    function updateStatistics(tableId) {
+        const table = document.querySelector(`table[data-name="${tableId}"] tbody`);
+        for (let i = 0; i < table.rows.length; i++) {
+            const row = table.rows[i];
+            calculateHours(row);
+        }
+        generateStatistics();
+    }
+
+    function showNotification(message, type) {
+        const notification = document.getElementById('notification');
+        notification.innerText = message;
+        notification.className = 'notification ' + type;
+        notification.style.display = 'block';
+        setTimeout(() => {
+            notification.style.display = 'none';
+        }, 3000);
+    }
+
+    function exportToExcel() {
+        const tablesContainer = document.getElementById('tablesContainer');
+        const tables = tablesContainer.getElementsByTagName('table');
+        const wb = XLSX.utils.book_new();
+
+        Array.from(tables).forEach(table => {
+            const ws = XLSX.utils.table_to_sheet(table, { raw: true });
+            XLSX.utils.book_append_sheet(wb, ws, table.dataset.name);
+        });
+
+        XLSX.writeFile(wb, 'جداول_الموظفين.xlsx');
+    }
+
+    function loadStickyNotes() {
+        fetch(apiUrl + '?action=getStickyNotes')
+            .then(response => response.json())
+            .then(data => {
+                const stickyNotesContainer = document.getElementById('stickyNotesContainer');
+                stickyNotesContainer.innerHTML = '';
+                data.forEach(note => {
+                    addStickyNote(note.content, note.id);
+                });
+            })
+            .catch(error => console.error('Error:', error));
+    }
+
+    function addStickyNote(content = '', id = null) {
+        const stickyNotesContainer = document.getElementById('stickyNotesContainer');
+        const stickyNote = document.createElement('div');
+        stickyNote.classList.add('sticky-note');
+
+        const colors = ['lightyellow', 'lightgreen', 'lightblue', 'lightpink', 'lightgray'];
+        const color = colors[Math.floor(Math.random() * colors.length)];
+        stickyNote.style.backgroundColor = color;
+
+        const closeButton = document.createElement('span');
+        closeButton.classList.add('close-btn');
+        closeButton.innerHTML = '&times;';
+        closeButton.onclick = function() {
+            deleteStickyNote(stickyNote, id);
+        };
+
+        const contentDiv = document.createElement('div');
+        contentDiv.contentEditable = 'true';
+        contentDiv.innerHTML = content;
+        contentDiv.onblur = function() {
+            saveStickyNote(contentDiv.innerHTML, id);
+        };
+
+        stickyNote.appendChild(closeButton);
+        stickyNote.appendChild(contentDiv);
+        stickyNotesContainer.appendChild(stickyNote);
+    }
+
+    function saveStickyNote(content, id) {
+        fetch(apiUrl + '?action=saveStickyNote', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ content, id })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'success') {
+                if (id === null) {
+                    loadStickyNotes();
+                }
+            } else {
+                showNotification('حدث خطأ أثناء حفظ الملاحظة', 'error');
+            }
+        })
+        .catch(error => {
+            showNotification('حدث خطأ أثناء حفظ الملاحظة', 'error');
+        });
+    }
+
+    function deleteStickyNote(stickyNote, id) {
+        stickyNote.remove();
+        if (id !== null) {
+            fetch(apiUrl + '?action=deleteStickyNote', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ id })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status !== 'success') {
+                    showNotification('حدث خطأ أثناء حذف الملاحظة', 'error');
+                }
+            })
+            .catch(error => {
+                showNotification('حدث خطأ أثناء حذف الملاحظة', 'error');
+            });
+        }
+    }
+
+    function deleteEmployee(employeeId, button, tableSelect) {
+        fetch(apiUrl, {
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ employeeId: employeeId })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'success') {
+                const row = button.closest('tr');
+                row.remove();
+                showNotification('تم حذف الموظف بنجاح', 'success');
+                saveEmployees(tableSelect);
+            } else {
+                showNotification('حدث خطأ أثناء حذف الموظف', 'error');
+            }
+        })
+        .catch(error => {
+            showNotification('حدث خطأ أثناء حذف الموظف', 'error');
+        });
+    }
+
+    function generateStatistics() {
+        const tablesContainer = document.getElementById('tablesContainer');
+        const tables = tablesContainer.getElementsByTagName('table');
+        const dCounts = new Array(31).fill(0);
+        const nCounts = new Array(31).fill(0);
+
+        Array.from(tables).forEach(table => {
+            const rows = table.getElementsByTagName('tbody')[0].getElementsByTagName('tr');
+            Array.from(rows).forEach(row => {
+                for (let i = 0; i < 31; i++) {
+                    const shift = row.cells[i + 3].querySelector('select').value;
+                    if (shift === 'D') {
+                        dCounts[i]++;
+                    } else if (shift === 'N') {
+                        nCounts[i]++;
+                    }
+                }
+            });
+        });
+
+        const daysRowStatistics = document.getElementById('daysRowStatistics');
+        const datesRowStatistics = document.getElementById('datesRowStatistics');
+        const statisticsRowD = document.getElementById('statisticsRowD');
+        const statisticsRowN = document.getElementById('statisticsRowN');
+
+        daysRowStatistics.innerHTML = '<td>اليوم</td>';
+        datesRowStatistics.innerHTML = '<td>التاريخ</td>';
+        statisticsRowD.innerHTML = '<td>الصباح</td>';
+        statisticsRowN.innerHTML = '<td>المساء</td>';
+
+        const days = ['الأحد', 'الاثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت'];
+        const date = new Date(2024, 7, 1);
+
+        for (let i = 1; i <= 31; i++) {
+            const day = days[date.getDay()];
+            const thDay = document.createElement('th');
+            thDay.innerText = day;
+            daysRowStatistics.appendChild(thDay);
+
+            const thDate = document.createElement('th');
+            thDate.innerText = i;
+            datesRowStatistics.appendChild(thDate);
+
+            const tdD = document.createElement('td');
+            tdD.innerText = dCounts[i - 1];
+            statisticsRowD.appendChild(tdD);
+
+            const tdN = document.createElement('td');
+            tdN.innerText = nCounts[i - 1];
+            statisticsRowN.appendChild(tdN);
+
+            date.setDate(date.getDate() + 1);
+        }
+    }
+</script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.16.2/xlsx.full.min.js"></script>
+
+</body>
+</html>
